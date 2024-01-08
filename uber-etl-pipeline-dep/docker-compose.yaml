@@ -1,0 +1,49 @@
+version: "3.8"
+networks:
+  uber_etl_pipeline_dep:
+    external: true
+services:
+  pgdatabase15:
+    image: postgres:15
+    container_name: pgdatabase15
+    networks:
+      - uber_etl_pipeline_dep
+    tty: true
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=toor
+      - POSTGRES_DB=ny_taxi
+    volumes:
+      - "C:\\ProjectsDatabaseDataFiles\\PostgreSQL\\data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    networks:
+      - uber_etl_pipeline_dep
+    tty: true
+    container_name: pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=toor
+    volumes:
+      - C:\\ProjectsDatabaseDataFiles\\PostgreSQL\\pgadmin4:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    depends_on:
+      - pgdatabase15
+      
+  uber-etl-pipeline-dep:
+    build:
+      context: ../DockerImages/Python
+      dockerfile: Dockerfile
+    image: uber-etl-pipeline-dep
+    networks:
+      - uber_etl_pipeline_dep
+    tty: true
+    depends_on:
+      - pgdatabase15
+    volumes:
+       - C:\\Projects\\uber-etl-pipeline-dep\\batch\\src:/src
+       - C:\\Projects\\uber-etl-pipeline-dep\\batch\\data:/data
